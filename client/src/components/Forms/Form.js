@@ -1,32 +1,47 @@
-import React,{useState} from 'react'
+import React,{useState, useEffect} from 'react'
 
 import { TextField, Button, Typography, Paper } from '@material-ui/core';
 import useStyles from './styles.js';
-import {useDispatch} from 'react-redux';
-import { createPost } from '../../actions/posts'; 
+import {useDispatch, useSelector} from 'react-redux';
+import { createPost,updatePost } from '../../actions/posts'; 
+
  
 
 
-const form = () => {
+const form = ({currentId , setCurrentId}) => {
   const classes = useStyles();
   const [postData, setPostData] = useState({ creator: '', title: '', message: '' });
+  const post = useSelector((state) => currentId ? state.posts.find((p)=> p._id === currentId):null);
   const dispatch = useDispatch();
   
+
+  useEffect(() => {
+    if (post) setPostData(post);
+  }, [post]);
 
   const handleSubmit= (e) =>{
     e.preventDefault();
 
-    dispatch(createPost(postData));
+    if(currentId){
+      
+      dispatch(updatePost(currentId,postData));
+    }
+    else{
+
+      dispatch(createPost(postData));
+    }
+    clear();
   }
   const clear= () =>{
-    
+    setCurrentId(null);
+    setPostData({ creator: '', title: '', message: '' });
   }
 
   return (
     <Paper className={classes.paper}>
     <form autiComplete="off" noValidate className={`${classes.root} ${classes.form}`} onSubmit={handleSubmit}>
     <Typography variant='h6'>
-    Creating the Post
+    {currentId ? 'Editing' : 'Creating'} the Post
     </Typography>
 
     <TextField name='creator' variant='outlined' label='Creator' fullWidth value={postData.creator} onChange={(e)=> setPostData({...postData, creator: e.target.value})} />
